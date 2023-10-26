@@ -227,7 +227,7 @@ async function initialize() {
 
   const tx = await signer.sendTransaction({
     to: address,
-    value: ethers.parseEther("1").toString(),
+    value: ethers.parseEther("10").toString(),
   });
   await tx.wait();
 
@@ -572,6 +572,39 @@ describe("BulkWithdraw contract and module tests", () => {
     });
 
     describe("processInvoices", () => {
+      it("should process the given invoices by sending the specified amount of Ether to the contract and then send them to receivers", async () => {
+        let receiver0_balance = (
+          await receivers[0].provider?.getBalance(
+            await receivers[0].getAddress()
+          )
+        )?.toString();
+
+        const sendingInvoices: SendingInvoice[] = [
+          {
+            amount: ethers.parseEther("0.1"),
+            receiver: await receivers[0].getAddress(),
+          },
+        ];
+        await bulkWithdraw.processInvoices(
+          walletCore,
+          ethers.parseEther("0.1"),
+          sendingInvoices
+        );
+
+        let receiver0_current_bal = (
+          await receivers[0].provider?.getBalance(
+            await receivers[0].getAddress()
+          )
+        )?.toString();
+        const r0NewBalance: bigint = BigInt(
+          receiver0_current_bal ? receiver0_current_bal : "0"
+        );
+        const r0CalcBalance: bigint =
+          BigInt(ethers.parseEther("0.1").toString()) +
+          BigInt(receiver0_balance ? receiver0_balance : "0");
+        await expect(r0NewBalance).to.be.equal(r0CalcBalance);
+      });
+
       it("should process invoice without errors when all conditions are met", async function () {
         const sendAmount: bigint = BigInt("100000");
 
@@ -715,39 +748,6 @@ describe("BulkWithdraw contract and module tests", () => {
           invoice2,
         ]);
         expect(result.length).to.be.equal(0);
-      });
-
-      it("should process the given invoices by sending the specified amount of Ether to the contract and then send them to receivers", async () => {
-        let receiver0_balance = (
-          await receivers[0].provider?.getBalance(
-            await receivers[0].getAddress()
-          )
-        )?.toString();
-
-        const sendingInvoices: SendingInvoice[] = [
-          {
-            amount: ethers.parseEther("0.1"),
-            receiver: await receivers[0].getAddress(),
-          },
-        ];
-        await bulkWithdraw.processInvoices(
-          walletCore,
-          ethers.parseEther("0.1"),
-          sendingInvoices
-        );
-
-        let receiver0_current_bal = (
-          await receivers[0].provider?.getBalance(
-            await receivers[0].getAddress()
-          )
-        )?.toString();
-        const r0NewBalance: bigint = BigInt(
-          receiver0_current_bal ? receiver0_current_bal : "0"
-        );
-        const r0CalcBalance: bigint =
-          BigInt(ethers.parseEther("0.1").toString()) +
-          BigInt(receiver0_balance ? receiver0_balance : "0");
-        await expect(r0NewBalance).to.be.equal(r0CalcBalance);
       });
     });
   });
