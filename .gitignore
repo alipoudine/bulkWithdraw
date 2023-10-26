@@ -1,0 +1,23 @@
+# compiled output
+/dist
+/node_modules
+
+coverage
+coverage.json
+typechain
+typechain-types
+.env
+
+# Hardhat files
+cache
+
+# IDEs and editors
+/.idea
+
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
